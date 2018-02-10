@@ -5,6 +5,9 @@
 #' 
 #' @param dataDirectory If specified, launches configuration UI with files in data directory. If \code{NULL}, 
 #' prompts user to select a single FCS file in data directory. 
+#'
+#' @param outputDirectory If specified, writes output to specified directory, otherwise output is written to
+#' citrusOutput folder in working directory.
 #' 
 #' @author Robert Bruggner
 #' @export
@@ -12,7 +15,7 @@
 #' @examples
 #' # Uncomment to run
 #' # citrus.launchUI(file.path(system.file(package = "citrus"),"extdata","example1"))
-citrus.launchUI = function(dataDirectory=NULL){  
+citrus.launchUI = function(dataDirectory=NULL, outputDirectory=NULL){  
   
   library("shiny")
   library("brew")
@@ -21,6 +24,14 @@ citrus.launchUI = function(dataDirectory=NULL){
     dataDir <<-dataDirectory
   }
   
+  if (!is.null(outputDirectory)) {
+    outputPath <- outputDirectory
+  } else {
+    outputPath = file.path(dataDir,"citrusOutput")
+  }
+
+  assign("citrus.outputPath", outputPath, envir = .GlobalEnv)
+
   #sapply(list.files(file.path(system.file(package = "citrus"),"shinyGUI","guiFunctions"),pattern=".R",full.names=T),source)
   
   res = tryCatch({
@@ -32,8 +43,7 @@ citrus.launchUI = function(dataDirectory=NULL){
   }, finally = {
     
   })
-  
-  outputPath = file.path(dataDir,"citrusOutput")
+
   if (runCitrus){
     setwd(outputPath)
     runFile = file.path(outputPath,"runCitrus.R")

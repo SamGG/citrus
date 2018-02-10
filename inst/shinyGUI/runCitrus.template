@@ -19,7 +19,7 @@ family = "classification"
 # dataDirectory = "../"
 dataDirectory = <%cat(stringQuote(templateData[["dataDir"]]))%>
 
-outputDirectory = <%cat("file.path(dataDirectory,\"citrusOutput\")")%>
+outputDirectory = <%cat(stringQuote(templateData[["outputDir"]]))%>
 clusteringColumns = c(<%cat(paste(sapply(templateData[["clusterCols"]],stringQuote),collapse=","))%>)
 <% if ("medianColumns" %in% names(templateData)) {
 cat(paste("medianColumns=c(",paste(sapply(templateData[["medianColumns"]],stringQuote),collapse=","),")\n",sep=""))
