@@ -3,11 +3,13 @@
 \alias{citrus.launchUI}
 \title{Launch web-based interface for configuring and running citrus}
 \usage{
-citrus.launchUI(dataDirectory = NULL)
+citrus.launchUI(dataDirectory = NULL, outputDirectory = NULL)
 }
 \arguments{
 \item{dataDirectory}{If specified, launches configuration UI with files in data directory. If \code{NULL},
 prompts user to select a single FCS file in data directory.}
+\item{dataDirectory}{If specified, writes output to specified directory, otherwise output is written to
+citrusOutput folder in working directory.}
 }
 \description{
 Launches shiny-based interface to configuring and running Citrus. Creates runCitrus.R that can be used to run analysis
