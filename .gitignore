@@ -12,3 +12,6 @@ src-*
 citrusOutput
 citrus.Rcheck
 inst/extdata/example*/citrusOutput
+*.Rproj
+citrus-check.txt
+TODO.*

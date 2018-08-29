@@ -4,16 +4,19 @@
 #' 
 #' @docType package
 #' @name Citrus
-#' # @useDynLib Citrus
-#' @docType package
-#' @name Citrus
 #' @import pamr
+NULL
 #' @import glmnet
+NULL
 #' @import samr
+NULL
 #' @import ggplot2
+NULL
 #' @import flowCore
+NULL
 #' @import igraph
+NULL
 #' @import survival
-#' @import parallel
+NULL#' @import parallel
 #' @import reshape2
 NULL

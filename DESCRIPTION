@@ -13,4 +13,5 @@ Imports:
     Rclusterpp,pamr,glmnet,samr,ggplot2,flowCore,igraph,survival,parallel,reshape2
 Suggests:
     emdist,shiny,brew
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
+Encoding: UTF-8
