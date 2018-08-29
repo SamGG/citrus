@@ -77,6 +77,7 @@ citrus.thresholdCVs.quick.classification = function(modelType,features,labels,re
       standardize=addtlArgs[["standardize"]]
     }
     glmnetModel = cv.glmnet(x=features,y=labels,family=glmnetFamily,lambda=regularizationThresholds,type.measure="class",alpha=alpha,standardize=standardize)
+    errorRates$threshold <- glmnetModel$lambda
     errorRates$cvm = glmnetModel$cvm
     errorRates$cvsd = glmnetModel$cvsd
   } else if (modelType=="sam"){

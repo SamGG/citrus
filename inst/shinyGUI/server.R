@@ -340,6 +340,7 @@ writeRunCitrusFile = function(input,templateFile=NULL){
   templateData[["citrusVersion"]] = citrus.version();
   templateData[["preload"]]=preload
   templateData[["dataDir"]]=dataDir
+  templateData[["outputDir"]]=citrus.outputPath
   templateData[["computedFeatures"]] = names(getComputedFeatures(input))[unlist(getComputedFeatures(input))]
   templateData[["classificationModels"]] = citrus.modelTypes()[getSelectedModels(input)]
   if (preload){
@@ -347,7 +348,12 @@ writeRunCitrusFile = function(input,templateFile=NULL){
     templateData[["conditionComparaMatrix"]]=getConditionComparaMatrix(input,conditions=colnames(keyFile[,-labelCol]))
     templateData[["conditions"]]=colnames(keyFile[,-labelCol])
   }
-  outputDir = file.path(dataDir,"citrusOutput")
+
+  if (!is.null(citrus.outputPath)){
+    outputDir <- citrus.outputPath
+  } else {
+    outputDir = file.path(dataDir,"citrusOutput")
+  }
   if (!file.exists(outputDir)){
     dir.create(file.path(dataDir,"citrusOutput"),showWarnings=F)
   }
