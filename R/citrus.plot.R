@@ -160,6 +160,16 @@ citrus.plotModelDifferentialFeatures.classification = function(differentialFeatu
     }
     print(p)
     dev.off()
+    
+    
+    png(file.path(modelOutputDirectory,paste0("features-",sub(pattern="\\.",replacement="_",x=cvPoint),".png")), width = 4*96, height = length(nonzeroFeatureNames)*1.5*96, res = 96, type = "cairo")
+    p <- ggplot(melted, aes(x=factor(labels), y=value)) 
+    p = p + facet_wrap(~variable,ncol=1) + geom_boxplot(outlier.colour=rgb(0,0,0,0),colour=rgb(0,0,0,.3)) + geom_point(aes(color=factor(labels)),alpha=I(0.25),shape=19,size=I(2)) + coord_flip() +  theme_bw() + ylab("") + xlab("") + theme(legend.position = "none")
+    if (any(grepl(pattern="abundance",nonzeroFeatureNames))){
+      p  = p+scale_y_log10() + ylab("Log10 scale")
+    }
+    print(p) #  + theme(axis.text=element_text(size=14), strip.text = element_text(size=14)))
+    dev.off()
   }
   
 }
@@ -180,6 +190,16 @@ citrus.plotModelDifferentialFeatures.continuous = function(differentialFeatures,
       p  = p+scale_x_log10() + xlab("Log10 scale")
     }
     print(p)
+    dev.off()
+    
+    
+    png(file.path(modelOutputDirectory,paste0("features-",sub(pattern="\\.",replacement="_",x=cvPoint),".png")), width = 4*96, height = length(nonzeroFeatureNames)*1.5*96, type = "cairo")
+    p <- ggplot(melted, aes(x=value, y=labels)) 
+    p = p + facet_wrap(~variable,ncol=1) + geom_point(size=I(2)) + theme_bw() + ylab("") + xlab("") + theme(legend.position = "none")
+    if (any(grepl(pattern="abundance",nonzeroFeatureNames))){
+      p  = p+scale_x_log10() + xlab("Log10 scale")
+    }
+    print(p) # + theme(axis.text=element_text(size=14), strip.text = element_text(size=14)))
     dev.off()
   }
   
@@ -241,6 +261,49 @@ citrus.plotClusters = function(clusterIds,clusterAssignments,citrus.combinedFCSS
   
   data = citrus.combinedFCSSet$data
   
+  # CSV for heatmap
+  if (!is.null(outputFile)){
+    clusterDataList = list();
+    for (clusterId in sort(clusterIds)){
+      if (length(clusterAssignments[[clusterId]])>2500){
+        clusterDataList[[as.character(clusterId)]]=data[clusterAssignments[[clusterId]],clusteringColumns][sample(1:length(clusterAssignments[[clusterId]]),2500),]
+      } else {
+        clusterDataList[[as.character(clusterId)]]=data[clusterAssignments[[clusterId]],clusteringColumns]
+      }
+      colnames(clusterDataList[[as.character(clusterId)]])=.getDisplayNames(citrus.combinedFCSSet,clusteringColumns)
+    }
+    browser()
+    melt(clusterDataList, )
+    write.csv(,
+              file = sub(".pdf", ".csv", outputFile, fixed = TRUE), quote = F)
+  }
+  
+
+  # PNG output  
+  if (!is.null(outputFile)){
+    png(file = sub(".pdf", ".png", outputFile, fixed = TRUE), res = 96,
+        width = (2.2*length(clusteringColumns)+2) * 96,
+        height = (2*length(clusterIds)) * 96)
+    clusterDataList = list();
+    for (clusterId in sort(clusterIds)){
+      if (length(clusterAssignments[[clusterId]])>2500){
+        clusterDataList[[as.character(clusterId)]]=data[clusterAssignments[[clusterId]],clusteringColumns][sample(1:length(clusterAssignments[[clusterId]]),2500),]
+      } else {
+        clusterDataList[[as.character(clusterId)]]=data[clusterAssignments[[clusterId]],clusteringColumns]
+      }
+      colnames(clusterDataList[[as.character(clusterId)]])=.getDisplayNames(citrus.combinedFCSSet,clusteringColumns)
+    }
+    if (nrow(data)>2500){
+      bgData = data[sample(1:nrow(data),2500),clusteringColumns]
+    } else {
+      bgData = data[,clusteringColumns]
+    }
+    colnames(bgData) = colnames(clusterDataList[[1]])
+    citrus.overlapDensityPlot(clusterDataList=clusterDataList,backgroundData=bgData)
+    dev.off()  
+  }
+
+  # PDF and standard outputs
   if (!is.null(outputFile)){
     pdf(file=outputFile,width=(2.2*length(clusteringColumns)+2),height=(2*length(clusterIds)))  
   }
@@ -448,6 +511,31 @@ citrus.plotClusteringHierarchy = function(outputFile,clusterColors,graph,layout,
     }
   }
   dev.off()  
+  
+  # PNG
+  outputFile = gsub(".pdf", "_%02d_%s.png", outputFile)
+  
+  for (target in 1:ncol(clusterColors)){
+    if (is.numeric(clusterColors)){
+      ct = seq(from=(min(clusterColors[,target])-0.01),to=(max(clusterColors[,target])+0.01),length.out=20)
+      cols = .graphColorPalette(20)[sapply(clusterColors[,target],findInterval,vec=ct)]  
+    } else {
+      cols = clusterColors[,target]
+    }
+    png(file = sprintf(outputFile, target, colnames(clusterColors)[target]),
+        width = plotSize*96, height = plotSize*96, bg = bg, res = 96, type = "cairo")
+    par(col.main=stroke)  
+    plot.igraph(graph,layout=layout,vertex.color=cols,main=colnames(clusterColors)[target],edge.color=stroke,vertex.label.color=vc,edge.arrow.size=.2,vertex.frame.color=strokea,vertex.label.cex=.7,vertex.label.family="Helvetica")
+    
+    # Legend
+    if(is.numeric(clusterColors)){
+      legend_image <- as.raster(matrix(rev(.graphColorPalette(20)), ncol=1))
+      rasterImage(legend_image, 1.1, -.5, 1.15,.5)
+      text(x=1.15, y = seq(-.5,.5,l=5), labels = .decimalFormat(ct[c(1,floor((length(ct)/4)*1:4))]) ,pos=4,col=stroke)  
+    }
+    dev.off()  
+  }
+  
 }
 
 #' Plot clustering hierarchy with clusters highlighted
@@ -615,7 +703,7 @@ addtlArgs = list(...)
   if ("theme" %in% names(addtlArgs)){
     theme = addtlArgs[["theme"]]
   }
-    
+
   modelType=citrus.regressionResult$modelType
   
   cat(paste("Plotting results for",modelType,"\n"))
@@ -680,12 +768,17 @@ plot.citrus.full.result = function(citrus.full.result,outputDirectory){
   if (!file.exists(outputDirectory)){
     stop(paste0("Output directory '",outputDirectory,"' does not exist."))
   }
+  
+  .citrus.theme = "black"
+  if (exists("citrus.options")) {
+    if (!is.null(citrus.options$theme)) .citrus.theme = citrus.options$theme
+  }
   # Should 
   for (conditionName in names(results$conditions)){
     cat(paste0("\nPlotting Results for ",conditionName,"\n"))
     conditionOutputDir = file.path(outputDirectory,conditionName)
     dir.create(conditionOutputDir,showWarnings=F)
-    mclapply(citrus.full.result$conditionRegressionResults[[conditionName]],plot,outputDirectory=conditionOutputDir,citrus.foldClustering=citrus.full.result$citrus.foldClustering,citrus.foldFeatureSet=citrus.full.result$conditionFoldFeatures[[conditionName]],citrus.combinedFCSSet=citrus.full.result$citrus.combinedFCSSet,family=citrus.full.result$family,labels=citrus.full.result$labels,conditions=citrus.full.result$conditions[[conditionName]])
+    mclapply(citrus.full.result$conditionRegressionResults[[conditionName]],plot,outputDirectory=conditionOutputDir,citrus.foldClustering=citrus.full.result$citrus.foldClustering,citrus.foldFeatureSet=citrus.full.result$conditionFoldFeatures[[conditionName]],citrus.combinedFCSSet=citrus.full.result$citrus.combinedFCSSet,family=citrus.full.result$family,labels=citrus.full.result$labels,conditions=citrus.full.result$conditions[[conditionName]],theme=.citrus.theme)
     cat("\n")
   }
 }

@@ -95,6 +95,7 @@ shinyUI(pageWithSidebar(
       
       tabPanel("Run!",
                
+               selectInput("themeColor", "Theme color", list("black", "white"), selected = "white", multiple = FALSE),
                radioButtons("citrusRunAction", "Citrus Execution Options:",
                             list("Quit GUI and run Citrus in R" = "qar","Write runCitrus.R file to data directory only" = "wrc")
                             ),

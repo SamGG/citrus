@@ -86,6 +86,9 @@ results = citrus.full(
 )
 
 # plot results
+citrus.options = list(
+  theme = <%cat(stringQuote(ifelse(is.null(templateData[["themeColor"]]), "black", templateData[["themeColor"]])))%>
+)
 plot(results,outputDirectory)
 
 # ==================================================================================================
