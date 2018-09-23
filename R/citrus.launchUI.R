@@ -1,17 +1,18 @@
 #' Launch web-based interface for configuring and running citrus
-#' 
-#' Launches shiny-based interface to configuring and running Citrus. Creates runCitrus.R that can be used to run analysis
-#' in data directory. 
-#' 
-#' @param dataDirectory If specified, launches configuration UI with files in data directory. If \code{NULL}, 
-#' prompts user to select a single FCS file in data directory. 
 #'
-#' @param outputDirectory If specified, writes output to specified directory, otherwise output is written to
-#' citrusOutput folder in working directory.
-#' 
+#' Launches shiny-based interface to configuring and running Citrus. Creates
+#' runCitrus.R that can be used to run analysis in data directory.
+#'
+#' @param dataDirectory If specified, launches configuration UI with files in
+#'   data directory. If \code{NULL}, prompts user to select a single FCS file in
+#'   data directory.
+#'
+#' @param outputDirectory If specified, writes output to specified directory,
+#'   otherwise output is written to citrusOutput folder in working directory.
+#'
 #' @author Robert Bruggner
 #' @export
-#' 
+#'
 #' @examples
 #' # Uncomment to run
 #' # citrus.launchUI(file.path(system.file(package = "citrus"),"extdata","example1"))
@@ -24,14 +25,29 @@ citrus.launchUI = function(dataDirectory=NULL, outputDirectory=NULL){
     dataDir <<-dataDirectory
   }
   
-  if (!is.null(outputDirectory)) {
-    outputPath <- outputDirectory
-  } else {
-    outputPath = file.path(dataDir,"citrusOutput")
+  if (is.null(dataDir)) {
+    stop("Please specify the directory containing FCS files as an argument or using the global variable dataDir", call. = FALSE)
   }
+  
+  if (!dir.exists(dataDir)) {
+    stop(sprintf("The directory dataDir=\"%s\" does not exist. Please specify the directory containing FCS files as an argument or using the global variable dataDir", dataDir), call. = FALSE)
+  }
+  
+  # dataDir <<- normalizePath(dataDir, .Platform$file.sep)  # absolute path
+  
+  if (is.null(outputDirectory)) {
+    outputDirectory = file.path(dataDir, "citrusOutput")
+  }
+  if (dir.exists(outputDirectory)) {
+    stop(sprintf("Output directory \"%s\" already exists! rename it or erase it first!", outputDirectory), call. = FALSE)
+  }
+  # output does not exist, thus create it
+  dir.create(outputDirectory, showWarnings=F)
 
-  assign("citrus.outputPath", outputPath, envir = .GlobalEnv)
-
+  #assign("citrus.outputPath", outputPath, envir = .GlobalEnv)
+  citrus.outputPath <<- outputDirectory
+  # citrus.outputPath <<- normalizePath(outputDirectory, .Platform$file.sep)  # absolute path
+  
   #sapply(list.files(file.path(system.file(package = "citrus"),"shinyGUI","guiFunctions"),pattern=".R",full.names=T),source)
   
   res = tryCatch({
@@ -44,6 +60,7 @@ citrus.launchUI = function(dataDirectory=NULL, outputDirectory=NULL){
     
   })
 
+  outputPath = citrus.outputPath
   if (runCitrus){
     setwd(outputPath)
     runFile = file.path(outputPath,"runCitrus.R")
