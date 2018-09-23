@@ -126,9 +126,9 @@ shinyServer(function(input, output) {
   
   output$calculatedFeatures = renderUI({
     return(tagList(
-                    tags$span("Calculated Cluster Features:",class="control-label"),
-                    tags$br(),
-                    tagList(lapply(citrus.featureTypes(),serialFeaturesInput))
+      tags$span("Calculated Cluster Features:",class="control-label"),
+      tags$br(),
+      tagList(lapply(citrus.featureTypes(),serialFeaturesInput))
     ))
   })
   
@@ -209,11 +209,11 @@ shinyServer(function(input, output) {
       features[["Abundances"]] = tags$li("Cluster Abundances")
     } else if (!is.null(input$featureType)&&(input$featureType=="medians")){
       medianColumns = input$medianColumns
-        medianVals = tags$span("No Median Parameters Selected",class="red-error");
-        if (length(input$medianColumns)>0){
-          medianVals = tags$span(paste(input$medianColumns,collapse=", "))
-        }
-        features[["Medians"]] = tags$li(tagList(tags$span("Cluster Medians:"),medianVals))
+      medianVals = tags$span("No Median Parameters Selected",class="red-error");
+      if (length(input$medianColumns)>0){
+        medianVals = tags$span(paste(input$medianColumns,collapse=", "))
+      }
+      features[["Medians"]] = tags$li(tagList(tags$span("Cluster Medians:"),medianVals))
     }
     if (length(features)>0){
       featureSetTags = tags$ul(tagList(features))
@@ -224,8 +224,8 @@ shinyServer(function(input, output) {
         tagList(
           tags$li(paste("Minimum Cluster Size: ",input$minimumClusterSizePercent,"%",sep="")),
           tags$li(featureSetTags)
-          )
         )
+      )
     )
   })
   
@@ -348,7 +348,7 @@ writeRunCitrusFile = function(input,templateFile=NULL){
     templateData[["conditionComparaMatrix"]]=getConditionComparaMatrix(input,conditions=colnames(keyFile[,-labelCol]))
     templateData[["conditions"]]=colnames(keyFile[,-labelCol])
   }
-
+  
   if (!is.null(citrus.outputPath)){
     outputDir <- citrus.outputPath
   } else {
@@ -357,12 +357,11 @@ writeRunCitrusFile = function(input,templateFile=NULL){
   if (!file.exists(outputDir)){
     dir.create(file.path(dataDir,"citrusOutput"),showWarnings=F)
   }
-  
+  cat(outputDir, "\n")
   runCitrusTemplateFilePath = file.path(system.file(package="citrus"),"shinyGUI","runCitrus.template")
   if (exists("debugTemplate")&&(debugTemplate)){
     runCitrusTemplateFilePath = "/Users/rbruggner/Desktop/work/citrus/inst/shinyGUI/runCitrus.template" 
   }
-  
   brew(file=runCitrusTemplateFilePath,output=file.path(outputDir,"runCitrus.R"))
   
 }
@@ -393,7 +392,7 @@ getGroupNames = function(input){
   if (preload){
     return(unique(keyFile[,labelCol]))
   }
-
+  
   vals = c()
   for (i in 1:input$numberOfGroups){
     name = paste("Group",i,"name",sep="_");
@@ -411,7 +410,7 @@ getGroupNames = function(input){
 getSelectedFiles = function(input){
   sf = list();
   for (groupName in getGroupNames(input)){
-    sf[[groupName]] = reactiveValuesToList(input)[[paste(groupName,"files",sep="")]]
+    sf[[groupName]] = isolate(reactiveValuesToList(input))[[paste(groupName,"files",sep="")]]
   }
   return(sf)
 }

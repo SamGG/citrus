@@ -113,5 +113,3 @@ shinyUI(pageWithSidebar(
     )
   
 ))
-
-
