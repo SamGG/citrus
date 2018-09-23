@@ -5,18 +5,12 @@
 #' @docType package
 #' @name Citrus
 #' @import pamr
-NULL
 #' @import glmnet
-NULL
 #' @import samr
-NULL
 #' @import ggplot2
-NULL
 #' @import flowCore
-NULL
 #' @import igraph
-NULL
 #' @import survival
-NULL#' @import parallel
+#' @import parallel
 #' @import reshape2
 NULL
